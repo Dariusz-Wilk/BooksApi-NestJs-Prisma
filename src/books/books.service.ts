@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Book } from '@prisma/client';
+import { Book, UserOnBooks } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -32,5 +32,21 @@ export class BooksService {
     bookData: Omit<Book, 'id' | 'createdAt' | 'updatedAt'>,
   ): Promise<Book> {
     return this.prismaService.book.update({ where: { id }, data: bookData });
+  }
+
+  public async likedBook(likeBookData: Omit<UserOnBooks, 'id'>): Promise<Book> {
+    const { userId, bookId } = likeBookData;
+    return await this.prismaService.book.update({
+      where: { id: bookId },
+      data: {
+        users: {
+          create: {
+            user: {
+              connect: { id: userId },
+            },
+          },
+        },
+      },
+    });
   }
 }
